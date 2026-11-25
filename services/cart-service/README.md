@@ -1,4 +1,4 @@
-# cart-service (Entrega 2 — Rol 4)
+# cart-service (Entrega 2 — Abraham)
 
 Microservicio de Carrito y Sesiones (puerto interno `8002`).
 

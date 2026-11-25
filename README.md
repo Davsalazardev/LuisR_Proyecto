@@ -48,11 +48,11 @@ Proyecto de tienda departamental dividida en **tres microservicios independiente
    Edita `.env` con contraseñas locales (`.env` está ignorado en `.gitignore`).
 
 2. **Trabaja en tu rama según tu módulo** (detalle completo en [docs/reparto-equipo.md](docs/reparto-equipo.md)):
-   - `feat/infra-aws` — Infraestructura AWS, Security Groups, EC2 y Nginx Gateway
-   - `feat/orders-postgres` — PostgreSQL + `services/orders-inventory-service/`
-   - `feat/catalog-mongodb` — MongoDB (`$jsonSchema` + índices) + `services/catalog-service/`
-   - `feat/cart-redis-cache` — Redis (cache-aside, TTL, invalidación) + `services/cart-service/`
-   - `feat/integration-tests` — Integración API, Swagger/Postman y pruebas (rendimiento, fallos y concurrencia)
+   - `feat/infra-aws` — **German David Hernandez Castro** (Rol 1): Infraestructura AWS, Security Groups, EC2 y Nginx Gateway
+   - `feat/orders-postgres` — **David Eduardo Salazar Mireles** (Rol 2): PostgreSQL + `services/orders-inventory-service/`
+   - `feat/catalog-mongodb` — **Bran Elton Duque Hernandez** (Rol 3): MongoDB (`$jsonSchema` + índices) + `services/catalog-service/`
+   - `feat/cart-redis-cache` — **Abraham** (Rol 4): Redis (cache-aside, TTL, invalidación) + `services/cart-service/`
+   - `feat/integration-tests` — **Roque Martinez** (Rol 5): Integración API, Swagger/Postman y pruebas (rendimiento, fallos y concurrencia)
 
 3. **Levantar las bases de datos con Docker Compose:**
    - **Catálogo (MongoDB + Redis Caché):**

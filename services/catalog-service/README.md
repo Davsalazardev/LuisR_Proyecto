@@ -1,4 +1,4 @@
-# catalog-service (Entrega 2 — Rol 3 + Rol 4)
+# catalog-service (Entrega 2 — Bran Elton Duque Hernandez / Abraham)
 
 Microservicio de Catálogo (puerto interno `8001`).
 

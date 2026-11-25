@@ -1,4 +1,4 @@
-# orders-inventory-service (Entrega 2 — Rol 2)
+# orders-inventory-service (Entrega 2 — David Eduardo Salazar Mireles)
 
 Microservicio de Órdenes e Inventario (puerto interno `8003`).
 
