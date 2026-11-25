@@ -1,6 +1,6 @@
 # Tienda Departamental en AWS
 
-> **¿Qué te toca hacer?** Revisa tu checklist detallado paso a paso (Avance 2 del viernes 27 nov, Entrega Final del 2 dic y dependencias) en **[docs/reparto-equipo.md](docs/reparto-equipo.md)**.
+> **¿Qué te toca hacer y cuándo es tu turno?** Revisa el plan de trabajo en cadena (un solo turno por persona, sin retrabajo) en **[docs/reparto-equipo.md](docs/reparto-equipo.md)**.
 
 Proyecto de tienda departamental dividida en **tres microservicios independientes** desplegados en AWS EC2, donde cada base de datos resuelve el problema para el que es más adecuada:
 

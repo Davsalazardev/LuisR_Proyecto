@@ -1,130 +1,119 @@
-# Organización del Equipo, Reparto Detallado y Flujo Git
+# Plan de Trabajo en Cadena (Relevos) — Tienda Departamental en AWS
 
 **Profesor:** Luis Roberto Flores  
 **Repositorio:** https://github.com/Davsalazardev/LuisR_Proyecto
 
-> Cada integrante es responsable de su módulo y debe registrar **commits propios** en su rama del repositorio Git (sin subir `.env`, llaves `.pem` ni credenciales).
+> **Regla de trabajo (carrera de relevos):** cada integrante trabaja **un solo turno**, deja su parte **100% terminada y subida a `main`**, le pasa la estafeta al siguiente y **ya no vuelve a programar nada** (solo repasar para la presentación del 3–4 de diciembre).  
+> Cada integrante debe tener **commits propios** en el repositorio y **nunca** subir `.env`, llaves `.pem` ni credenciales.
 
 ---
 
-## 1. Resumen del Equipo (6 Integrantes)
+## Orden de Relevos y Fechas Límite
 
-| Integrante | Rol / Módulo | Rama Git | Estado |
-|---|---|---|---|
-| **David Eduardo Salazar Mireles** | Arquitectura, diagramas, decisiones de diseño, esquemas y scripts base (PostgreSQL/MongoDB/Redis), Docker Compose, scripts AWS, repo Git y Entrega 1 | `main` | **Completado** |
-| **German David Hernandez Castro** | Infraestructura AWS (VPC, Security Groups, EC2, BDs) y despliegue detrás de Nginx | `feat/infra-aws` | Pendiente (Avance 1 AWS + 2 + Final) |
-| **Lizbeth Segundo Garcia** | Servicio de Órdenes e Inventario (`services/orders-inventory-service/`, PostgreSQL) | `feat/orders-service` | Pendiente (Avance 2 + Final) |
-| **Bran Elton Duque Hernandez** | Servicio de Catálogo (`services/catalog-service/`, MongoDB + `$jsonSchema` + reseñas) | `feat/catalog-mongodb` | Pendiente (Avance 2 + Final) |
-| **Abraham** | Servicio de Carrito (`services/cart-service/`, Redis) + caché *cache-aside* + prueba de rendimiento | `feat/cart-redis-cache` | Pendiente (Avance 2 + Final) |
-| **Roque Martinez** | Contrato API (Postman/Swagger), integración, pruebas de fallos/concurrencia y reporte final | `feat/integration-tests` | Pendiente (Avance 2 + Final) |
-
----
-
-## 2. Qué le Toca Hacer a Cada Integrante (Paso a Paso)
-
-### 2.1 German David Hernandez Castro — Infraestructura AWS, Seguridad y Despliegue
-- **Rama Git:** `feat/infra-aws`
-- **Para el viernes 27 de noviembre (Avance 2 + pendiente de AWS):**
-  - [ ] Levantar en AWS la VPC (`10.0.0.0/16`), subred pública (`10.0.1.0/24`), subred privada (`10.0.2.0/24`), los 4 Security Groups y las 4 instancias EC2 `t3.micro` usando `infrastructure/aws/cloudshell-all-in-one.sh` (o `provision-aws.sh`) desde AWS CloudShell.
-  - [ ] Confirmar que **MongoDB, Redis Caché, Redis Carrito y PostgreSQL** estén levantados en sus EC2 y que los puertos **`5432`, `27017` y `6379` NO estén abiertos a `0.0.0.0/0`**.
-  - [ ] Guardar capturas de evidencia: instancias EC2 en *Running*, reglas Inbound de los 4 Security Groups y pruebas de conexión vía Bastión SSH a las 3 bases de datos.
-  - [ ] Compartir IPs privadas y preparar `infrastructure/ec2/gateway/nginx.conf` para recibir los 3 servicios.
-- **Para el miércoles 2 de diciembre (Entrega Final):**
-  - [ ] Desplegar los contenedores de `catalog-service` (:8001), `cart-service` (:8002) y `orders-inventory-service` (:8003) en sus EC2 detrás de Nginx (`:80`).
-  - [ ] Comprobar desde fuera de AWS que `curl http://<IP_GATEWAY>/health` responde `200` y que los puertos `5432`, `27017` y `6379` están bloqueados desde Internet.
-  - [ ] Control de costos: detener (`Stop`) las EC2 al terminar pruebas y al cerrar el proyecto.
+```text
+[Turno 0] David   (LISTO)                      -> Base del proyecto, BDs, scripts AWS y Entrega 1
+    │
+    ▼
+[Turno 1] German  (Mié 25 nov - Jue 26 10:00)  -> Levanta AWS completo (EC2 + BDs + Nginx) y TERMINA
+    │
+    ▼
+[Turno 2] Elton   (Jue 26 10:00 - Jue 26 20:00)-> Hace y sube catalog-service (MongoDB) y TERMINA
+    │
+    ▼
+[Turno 3] Abraham (Jue 26 20:00 - Vie 27 13:00)-> Hace cart-service + caché en catálogo + prueba rendimiento y TERMINA
+    │
+    ▼
+[Turno 4] Lizbeth (Vie 27 13:00 - Vie 27 21:00)-> Hace orders-inventory-service ya conectado a cart-service y TERMINA
+    │                                             ══► ENTREGA 2 (Viernes 27 nov): AWS + 3 servicios listos
+    ▼
+[Turno 5] Roque   (Sáb 28 nov - Mar 1 dic)     -> Postman/Swagger, pruebas de fallos y concurrencia, reporte y video
+                                                  ══► ENTREGA FINAL (Miércoles 2 dic)
+```
 
 ---
 
-### 2.2 Lizbeth Segundo Garcia — Servicio de Órdenes e Inventario (PostgreSQL)
-- **Carpeta / Rama Git:** `services/orders-inventory-service/` · `feat/orders-service`
-- **Base ya lista en el repo:** `databases/postgres/init.sql` (4 tablas, `CHECK (stock_disponible >= 0)` y función `confirmar_compra` con `SELECT ... FOR UPDATE`) y `infrastructure/ec2/orders/docker-compose.yml`.
-- **Para el viernes 27 de noviembre (Avance 2 — servicio funcionando por separado):**
-  - [ ] Levantar PostgreSQL local con Docker Compose y verificar que cargue `init.sql`.
-  - [ ] Programar la API REST en `services/orders-inventory-service/` (puerto `8003`) conectada **únicamente** a PostgreSQL (`tienda_ordenes`).
-  - [ ] Implementar los endpoints:
-    - `GET /health` (valida conexión a PostgreSQL y responde estado JSON).
-    - `GET /inventory/:sku` (consulta existencias disponibles).
-    - `POST /orders/confirm`: ejecuta la transacción ACID `confirmar_compra()` (crea orden y descuenta stock; si no hay existencias hace `ROLLBACK` y regresa `409 Conflict` sin dejar datos a medias). *Para probar sola en Avance 2 puede aceptar ítems en el body.*
-    - `GET /orders/customer/:clienteId`: consulta el historial de compras del cliente con sus ítems.
-  - [ ] Agregar `Dockerfile` y capturas de evidencia (compra exitosa, rechazo por falta de stock sin stock negativo e historial).
-- **Para el miércoles 2 de diciembre (Entrega Final — integración):**
-  - [ ] Conectar `POST /orders/confirm` por **API HTTP** a `cart-service:8002` (leer carrito antes de comprar y llamar `DELETE /carts/:userId` tras confirmar; **nunca** consultar Redis directo) con timeout de **3 segundos** y error controlado (`503`) si falla.
+## Detalle Exacto de Cada Turno
+
+### Turno 0 — David Eduardo Salazar Mireles *(COMPLETADO)*
+- **Ya entregado:** Arquitectura, diagramas, decisiones de diseño, esquemas y scripts de PostgreSQL (`init.sql`), MongoDB (`init.js` con `$jsonSchema` e índices) y Redis (`estructura-claves.md`, `.conf`), Docker Compose, scripts AWS (`cloudshell-all-in-one.sh`), `.gitignore`, `.env.example`, repositorio GitHub y documento de Entrega 1.
+- **Estado:** Terminado. No tiene pendientes de código.
 
 ---
 
-### 2.3 Bran Elton Duque Hernandez — Servicio de Catálogo (MongoDB + Reseñas)
-- **Carpeta / Rama Git:** `services/catalog-service/` · `feat/catalog-mongodb`
-- **Base ya lista en el repo:** `databases/mongodb/init.js` (`$jsonSchema` en `productos` y `resenas`, índices y datos semilla), `databases/mongodb/verify.js` e `infrastructure/ec2/catalog/docker-compose.yml`.
-- **Para el viernes 27 de noviembre (Avance 2 — servicio funcionando por separado):**
-  - [ ] Levantar MongoDB local con Docker Compose y verificar `$jsonSchema` e índices corriendo `databases/mongodb/verify.js`.
-  - [ ] Programar la API REST en `services/catalog-service/` (puerto `8001`) conectada a MongoDB (`tienda_catalogo`).
-  - [ ] Implementar los endpoints:
-    - `GET /health` (reporta estado de MongoDB y de Redis Caché).
-    - `GET /products`: listar catálogo y **filtrar por categoría (`categoria`) y rango de precio (`precioMin`, `precioMax`)**.
-    - `GET /products/:productoId`: detalle de un producto con sus atributos variables (refrigerador, camisa, laptop, etc.).
-    - `POST /products` y `PUT /products/:productoId`: alta y actualización de producto (respetando `$jsonSchema` y dejando el punto de invalidación de caché para integrar con Abraham).
-    - `POST /products/:productoId/reviews` y `GET /products/:productoId/reviews`: registrar y consultar reseñas (actualizando `resumenResenas`).
-  - [ ] Agregar `Dockerfile` y capturas de evidencia (listado, filtros, detalle, reseñas y rechazo de documento inválido por `$jsonSchema`).
-- **Para el miércoles 2 de diciembre (Entrega Final):**
-  - [ ] Coordinar con Abraham la integración final de *cache-aside* e invalidación en `catalog-service` y desplegar en `ec2-catalog` con German.
+### Turno 1 — German David Hernandez Castro *(Miércoles 25 nov → Jueves 26 nov, 10:00 a.m.)*
+- **Rama Git:** `feat/infra-aws` → merge a `main`
+- **Qué recibe:** El script listo `infrastructure/aws/cloudshell-all-in-one.sh` y `infrastructure/ec2/gateway/nginx.conf`.
+- **Qué debe hacer (en una sola sentada):**
+  - [ ] Ejecutar `infrastructure/aws/cloudshell-all-in-one.sh` en AWS CloudShell para crear la VPC (`10.0.0.0/16`), subredes, los 4 Security Groups (con `5432`, `27017` y `6379` cerrados a Internet) y las 4 EC2 `t3.micro` con MongoDB, Redis Caché, Redis Carrito y PostgreSQL levantados.
+  - [ ] Dejar configurado Nginx en `ec2-gateway-bastion` (`:80`) enrutando `/api/catalog/` → `10.0.1.20:8001`, `/api/cart/` → `10.0.1.30:8002` y `/api/orders/` → `10.0.1.40:8003` (así cuando sus compañeros levanten su contenedor, Nginx ya funcionará solo).
+  - [ ] Subir al repo sus capturas de AWS (4 EC2 *Running*, Security Groups sin BDs públicas y conexión vía Bastión a las 3 BDs) y pasar por mensaje privado al grupo las IPs + credenciales + llave `.pem` (**nunca** subir `.pem` ni `.env` a GitHub).
+- **Cuando avisa en el grupo:** *"Listo AWS, pasa Elton"* → **German termina 100% su parte.** *(Solo apagar las EC2 al terminar la presentación para no generar costos).*
 
 ---
 
-### 2.4 Abraham — Servicio de Carrito + Caché Cache-Aside (Redis) + Rendimiento
-- **Carpeta / Rama Git:** `services/cart-service/` (y caché en `services/catalog-service/`) · `feat/cart-redis-cache`
-- **Base ya lista en el repo:** `databases/redis/estructura-claves.md`, `redis-cart.conf`, `redis-cache.conf`, `verify.sh` e `infrastructure/ec2/cart/docker-compose.yml`.
-- **Para el viernes 27 de noviembre (Avance 2 — servicio funcionando por separado):**
-  - [ ] Levantar Redis local con Docker Compose y programar `services/cart-service/` (puerto `8002`) conectado a `redis-cart`:
+### Turno 2 — Bran Elton Duque Hernandez *(Jueves 26 nov, 10:00 a.m. → 8:00 p.m.)*
+- **Carpeta / Rama Git:** `services/catalog-service/` · `feat/catalog-mongodb` → merge a `main`
+- **Qué recibe:** `ec2-catalog` (`10.0.1.20`) ya corriendo con MongoDB 7 (`$jsonSchema`, índices y datos semilla de `databases/mongodb/init.js`).
+- **Qué debe hacer (en una sola sentada):**
+  - [ ] Programar completo `services/catalog-service/` (puerto `8001`, con `Dockerfile`) conectado a MongoDB:
+    - `GET /health` (estado de MongoDB).
+    - `GET /products` (listar catálogo + filtros `categoria`, `precioMin`, `precioMax`).
+    - `GET /products/:productoId` (detalle con atributos variables según tipo de producto).
+    - `POST /products` y `PUT /products/:productoId` (respetando `$jsonSchema`).
+    - `POST /products/:productoId/reviews` y `GET /products/:productoId/reviews` (registrar y consultar reseñas actualizando `resumenResenas`).
+  - [ ] Desplegar el contenedor en `ec2-catalog` (`:8001`), comprobar que responde vía `http://<IP_GATEWAY>/api/catalog/products` y guardar capturas de prueba (listado, filtros, reseñas y rechazo de `$jsonSchema`).
+  - [ ] Hacer commit y merge a `main`.
+- **Cuando avisa en el grupo:** *"Listo catalog-service en `main`, pasa Abraham"* → **Elton termina 100% su parte.**
+
+---
+
+### Turno 3 — Abraham *(Jueves 26 nov 8:00 p.m. → Viernes 27 nov, 1:00 p.m.)*
+- **Carpeta / Rama Git:** `services/cart-service/` y capa de caché en `services/catalog-service/` · `feat/cart-redis-cache` → merge a `main`
+- **Qué recibe:** `ec2-cart` (`10.0.1.30`) con Redis Carrito, `ec2-catalog` (`10.0.1.20`) con Redis Caché y el `catalog-service` ya terminado por Elton en `main`.
+- **Qué debe hacer (en una sola sentada):**
+  - [ ] Programar completo `services/cart-service/` (puerto `8002`, con `Dockerfile`) conectado a `redis-cart`:
     - `GET /health` (verifica `PING` a Redis y devuelve error controlado si cae).
     - Sesiones con expiración (`session:{sessionId}`, TTL 24 h): crear, validar y cerrar sesión.
-    - Carrito con expiración (`cart:{userId}`, TTL 7 días): consultar (`GET /carts/:userId`), agregar (`POST /carts/:userId/items`), modificar cantidad (`PATCH /carts/:userId/items/:sku`), eliminar (`DELETE /carts/:userId/items/:sku`) y vaciar (`DELETE /carts/:userId`).
-  - [ ] En coordinación con Elton, integrar el patrón **cache-aside** en `catalog-service` usando `redis-catalog-cache`:
+    - Carrito con expiración (`cart:{userId}`, TTL 7 días): `GET /carts/:userId`, `POST /carts/:userId/items`, `PATCH /carts/:userId/items/:sku`, `DELETE /carts/:userId/items/:sku` y `DELETE /carts/:userId` (vaciar carrito).
+  - [ ] Desplegar `cart-service` en `ec2-cart` (`:8002`) y verificar vía `http://<IP_GATEWAY>/api/cart/...`.
+  - [ ] Agregar a `services/catalog-service/` el patrón **cache-aside** con `redis-catalog-cache`:
     - Cachear detalle (`TTL 300 s`) y listados (`TTL 120 s`) devolviendo cabecera `X-Cache: HIT / MISS / BYPASS`.
-    - Invalidar caché (`DEL` + `INCR catalog:version`) al actualizar un producto o crear una reseña.
-    - *Fallback* automático a MongoDB si Redis Caché cae (timeout `500 ms`, nunca colgarse).
-  - [ ] Agregar `Dockerfile` y capturas de evidencia (carrito/sesiones con TTL + `HIT`/`MISS` e invalidación en catálogo).
-- **Para el miércoles 2 de diciembre (Entrega Final — prueba de rendimiento):**
-  - [ ] Ejecutar la **prueba de rendimiento**: 100 peticiones al mismo endpoint del catálogo **con y sin caché** (k6, JMeter, Locust o script), entregar tabla, gráfica comparativa y conclusiones.
+    - Invalidar caché (`DEL` + `INCR catalog:version`) en `PUT /products/:productoId` y nuevas reseñas.
+    - Timeout de `500 ms` y *fallback* automático a MongoDB si Redis Caché está apagado.
+    - Redesplegar `catalog-service` en `ec2-catalog`.
+  - [ ] **Hacer de una vez la Prueba de Rendimiento:** correr 100 peticiones al mismo endpoint del catálogo con y sin caché (k6, JMeter, Locust o script), guardar la tabla, gráfica y conclusiones en `docs/pruebas-rendimiento.md` (o carpeta de evidencias) junto con sus capturas de Entrega 2.
+  - [ ] Hacer commit y merge a `main`.
+- **Cuando avisa en el grupo:** *"Listo cart-service, caché y prueba de rendimiento en `main`, pasa Lizbeth"* → **Abraham termina 100% su parte.**
 
 ---
 
-### 2.5 Roque Martinez — Integración, Swagger/Postman, Pruebas y Entrega Final
-- **Rama Git:** `feat/integration-tests`
-- **Para el viernes 27 de noviembre (Avance 2):**
-  - [ ] Acordar y publicar las rutas y formatos JSON estándar con Lizbeth, Elton y Abraham para que los 3 servicios coincidan.
-  - [ ] Crear la **colección de Postman o documentación Swagger/OpenAPI** (o interfaz mínima) probando los 3 servicios por separado y subirla al repositorio.
-  - [ ] Compilar las evidencias individuales del equipo para la Entrega 2.
-- **Para el miércoles 2 de diciembre (Entrega Final):**
-  - [ ] Probar el flujo integrado completo pasando por Nginx en AWS (`ec2-gateway-bastion`): catálogo → filtros → reseñas → carrito → confirmar compra → inventario descontado y carrito vacío → historial de compras.
-  - [ ] Ejecutar la **prueba de fallos**: apagar un contenedor real (ej. Redis Caché y luego Redis Carrito o Catálogo), documentar la respuesta controlada (sin colgarse) y la recuperación al volver a encenderlo.
-  - [ ] Ejecutar la **prueba de concurrencia**: dos compras simultáneas del último artículo en stock (`REF-LG-001`, stock = 1), documentando que una pasa (`201`), la otra se rechaza (`409`) y por qué el inventario nunca queda en negativo.
-  - [ ] Armar el **reporte final** (resultados de las 3 pruebas y conclusiones), coordinar el **video** y el guion de la **presentación (máx. 10 min)**.
+### Turno 4 — Lizbeth Segundo Garcia *(Viernes 27 nov, 1:00 p.m. → 9:00 p.m.)*
+- **Carpeta / Rama Git:** `services/orders-inventory-service/` · `feat/orders-service` → merge a `main`
+- **Qué recibe:** `ec2-orders` (`10.0.1.40`) con PostgreSQL 16 (`init.sql` ya cargado) y `cart-service` (`10.0.1.30:8002`) **ya corriendo y terminado por Abraham**.
+- **Qué debe hacer (en una sola sentada):**
+  - [ ] Programar completo `services/orders-inventory-service/` (puerto `8003`, con `Dockerfile`) conectado únicamente a PostgreSQL (`tienda_ordenes`):
+    - `GET /health` (verifica conexión a PostgreSQL).
+    - `GET /inventory/:sku` (consulta existencias).
+    - `POST /orders/confirm`: consulta el carrito llamando por **API HTTP** a `http://10.0.1.30:8002/carts/:userId` (timeout 3 s, nunca directo a Redis), ejecuta la transacción ACID `confirmar_compra()` con `SELECT ... FOR UPDATE` (si falta stock hace `ROLLBACK` y devuelve `409 Conflict` sin datos a medias), y al confirmar llama por HTTP a `DELETE http://10.0.1.30:8002/carts/:userId` para vaciar el carrito.
+    - `GET /orders/customer/:clienteId` (historial de compras del cliente con sus ítems).
+  - [ ] Desplegar `orders-inventory-service` en `ec2-orders` (`:8003`), verificar vía `http://<IP_GATEWAY>/api/orders/...` y guardar sus capturas de prueba (compra exitosa, carrito vacío, stock descontado, rechazo sin stock e historial).
+  - [ ] Hacer commit y merge a `main`.
+- **Cuando avisa en el grupo:** *"Listo orders-inventory-service en `main`, pasa Roque"* → **Lizbeth termina 100% su parte y queda lista la ENTREGA 2 (viernes 27 nov) con los 3 servicios funcionando.**
 
 ---
 
-## 3. Dependencias y Orden de Trabajo para el Viernes 27 (Avance 2)
-
-> **Importante:** Nadie tiene que esperar a German para programar ni probar su servicio; cada quien puede levantar su BD local con los `docker-compose.yml` del repo hoy mismo.
-
-| Integrante | ¿Necesita esperar a alguien para el Avance 2? | ¿Quién depende de su avance? |
-|---|---|---|
-| **German** | **No** (los scripts AWS ya están listos). Debe levantar AWS primero. | Todos, para subir los contenedores a EC2. |
-| **Elton** | **No** (corre MongoDB local con Docker). | **Abraham** (para agregar *cache-aside* al catálogo) y **Roque** (para Postman). |
-| **Abraham** | `cart-service`: **No**. Caché del catálogo: necesita `GET/PUT /products` de **Elton**. | **Roque** (para Postman) y **Lizbeth** (al integrar en Entrega Final). |
-| **Lizbeth** | **No** (corre PostgreSQL local con `init.sql`). | **Roque** (para Postman) y **German** (su `Dockerfile`). |
-| **Roque** | Necesita las rutas/respuestas de **Elton, Abraham y Lizbeth** (jueves noche) para probar Postman. | Todo el equipo depende de que defina el contrato de rutas desde el inicio. |
+### Turno 5 — Roque Martinez *(Sábado 28 nov → Martes 1 dic, para Entrega Final del Miércoles 2 dic)*
+- **Rama Git:** `feat/integration-tests` → merge a `main`
+- **Qué recibe:** **TODO el sistema ya programado y desplegado en AWS** (EC2 + Nginx + 3 servicios + 3 BDs) y la prueba de rendimiento ya hecha por Abraham.
+- **Qué debe hacer (sin depender de nadie más):**
+  - [ ] Crear y subir la colección de **Postman o Swagger/OpenAPI** (o interfaz mínima) probando todas las rutas públicas detrás de `http://<IP_GATEWAY>/api/...`.
+  - [ ] Ejecutar y documentar la **Prueba de Fallos:** apagar un contenedor en EC2 (ej. `tienda-redis-cache` y luego `tienda-redis-cart`), capturar que el sistema responde con error controlado / degradación (sin quedarse colgado) y demostrar cómo se recupera al encenderlo.
+  - [ ] Ejecutar y documentar la **Prueba de Concurrencia:** disparar 2 compras simultáneas sobre el último artículo en existencia (`REF-LG-001`, stock = 1), demostrar que una pasa (`201`), la otra falla (`409`) y explicar por qué el inventario queda en `0` y nunca en negativo.
+  - [ ] Armar el **documento final de pruebas y conclusiones** (integrando la prueba de rendimiento de Abraham + fallos + concurrencia), grabar el **video** y armar la **presentación (máx. 10 min)** para el 3–4 de diciembre.
+  - [ ] Hacer commit y merge a `main`.
+- **Al terminar el martes 1 dic:** **Proyecto 100% listo para la Entrega Final del miércoles 2 de diciembre.**
 
 ---
 
-## 4. Reglas Git y Cronograma
-
-- **Ramas:** trabajar siempre en su rama (`feat/...`) y hacer Pull Request a `main`.
-- **Seguridad:** verificar `git status` antes de cada commit; **nunca** subir `.env`, `*.pem` ni credenciales.
-
-| Fecha | Entrega | Qué se entrega |
-|---|---|---|
-| **20 nov** | Entrega 1 | Diseño de arquitectura, decisiones, modelos de datos, reparto, repo Git y EC2 con BDs. |
-| **Viernes 27 nov** | **Entrega 2** | Los 3 servicios funcionando por separado (con `GET /health`), evidencia de cada uno, colección Postman/Swagger, AWS regularizado y commits por integrante. |
-| **Miércoles 2 dic** | **Entrega Final** | Integración completa en EC2 detrás de Nginx, pruebas de rendimiento, fallos y concurrencia con conclusiones, reporte y video. |
-| **3 y 4 dic** | Presentación | Demostración en vivo (máx. 10 min) con participación de todo el equipo. |
+## Nota sobre la Presentación (3 y 4 de diciembre)
+Aunque cada integrante terminó su parte en su turno, para la demostración en vivo (máx. 10 minutos) todos deben participar y poder responder preguntas básicas sobre el sistema completo.
