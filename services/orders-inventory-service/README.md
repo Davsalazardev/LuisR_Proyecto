@@ -1,4 +1,4 @@
-# orders-inventory-service (Entrega 2 — David Eduardo Salazar Mireles)
+# orders-inventory-service (Entrega 2 — Lizbeth Segundo Garcia)
 
 Microservicio de Órdenes e Inventario (puerto interno `8003`).
 

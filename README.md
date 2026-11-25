@@ -48,11 +48,12 @@ Proyecto de tienda departamental dividida en **tres microservicios independiente
    Edita `.env` con contraseñas locales (`.env` está ignorado en `.gitignore`).
 
 2. **Trabaja en tu rama según tu módulo** (detalle completo en [docs/reparto-equipo.md](docs/reparto-equipo.md)):
-   - `feat/infra-aws` — **German David Hernandez Castro** (Rol 1): Infraestructura AWS, Security Groups, EC2 y Nginx Gateway
-   - `feat/orders-postgres` — **David Eduardo Salazar Mireles** (Rol 2): PostgreSQL + `services/orders-inventory-service/`
-   - `feat/catalog-mongodb` — **Bran Elton Duque Hernandez** (Rol 3): MongoDB (`$jsonSchema` + índices) + `services/catalog-service/`
-   - `feat/cart-redis-cache` — **Abraham** (Rol 4): Redis (cache-aside, TTL, invalidación) + `services/cart-service/`
-   - `feat/integration-tests` — **Roque Martinez** (Rol 5): Integración API, Swagger/Postman y pruebas (rendimiento, fallos y concurrencia)
+   - `feat/infra-aws` — **German David Hernandez Castro**: Infraestructura AWS (EC2, VPC, Security Groups, BDs) y Nginx Gateway
+   - `feat/orders-service` — **Lizbeth Segundo Garcia**: `services/orders-inventory-service/` + transacción ACID en PostgreSQL
+   - `feat/catalog-mongodb` — **Bran Elton Duque Hernandez**: MongoDB (`$jsonSchema` + índices) + `services/catalog-service/`
+   - `feat/cart-redis-cache` — **Abraham**: Redis (cache-aside, TTL, invalidación), `services/cart-service/` y prueba de rendimiento
+   - `feat/integration-tests` — **Roque Martinez**: Integración API, Swagger/Postman, pruebas de fallos/concurrencia y reporte final
+   - *(Base del proyecto, modelos de datos, scripts y Entrega 1 completados por **David Eduardo Salazar Mireles**)*
 
 3. **Levantar las bases de datos con Docker Compose:**
    - **Catálogo (MongoDB + Redis Caché):**

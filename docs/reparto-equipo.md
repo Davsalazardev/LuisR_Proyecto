@@ -1,43 +1,40 @@
 # Organización del Equipo, Reparto de Tareas y Flujo Git
 
-## 1. Reparto de Módulos (Equipo de 5 Integrantes)
+**Profesor:** Luis Roberto Flores  
+**Repositorio:** https://github.com/Davsalazardev/LuisR_Proyecto
 
-**Profesor:** Luis Roberto Flores
+> Cada integrante es responsable de su módulo y debe registrar **commits propios** en el repositorio Git.
 
-> Cada integrante es dueño de su módulo y debe registrar **commits propios** en el repositorio Git.
+---
 
-| Rol | Integrante | Módulo y Responsabilidades | Rama Git | Entregables Clave |
-|---|---|---|---|---|
-| **Rol 1** | **German David Hernandez Castro** | **Infraestructura, Seguridad y Despliegue** | `feat/infra-aws` | VPC, subredes, Security Groups, Bastión SSH, aprovisionamiento de las 4 EC2 (`t3.micro`), Docker Compose, Nginx Gateway y control de costos AWS. |
-| **Rol 2** | **David Eduardo Salazar Mireles** | **Capa Relacional (Órdenes e Inventario)** | `feat/orders-postgres` | Modelo PostgreSQL, restricciones `CHECK`, función transaccional `confirmar_compra` con `FOR UPDATE`, servicio `orders-inventory-service` (:8003) e historial de compras. |
-| **Rol 3** | **Bran Elton Duque Hernandez** | **Capa Documental (Catálogo)** | `feat/catalog-mongodb` | Modelo MongoDB polimórfico, validadores `$jsonSchema` en `productos` y `resenas`, índices ESR, servicio `catalog-service` (:8001) con filtros y reseñas. |
-| **Rol 4** | **Abraham** | **Capa de Caché y Carrito (Redis)** | `feat/cart-redis-cache` | Instancias Redis (`redis-cache` y `redis-cart`), patrón *cache-aside*, TTL e invalidación en catálogo, servicio `cart-service` (:8002) y prueba de rendimiento (100 peticiones con/sin caché). |
-| **Rol 5** | **Roque Martinez** | **Integración, API y Pruebas** | `feat/integration-tests` | Estructura del repo, contrato OpenAPI/Swagger o colección Postman, comunicación HTTP entre servicios, health checks, prueba de fallos (apagar contenedor) y prueba de concurrencia (último artículo). |
+## 1. Estado Actual y Reparto de Módulos (6 Integrantes)
 
-### Adaptación para Equipos de 4 o 3 Integrantes
-- **Equipo de 4 integrantes**: El **Rol 5** absorbe parte del **Rol 1** (Nginx Gateway, Docker Compose y scripts de despliegue).
-- **Equipo de 3 integrantes**:
-  - Integrante A: **Rol 1 + Rol 5** (Infraestructura AWS, seguridad, integración y pruebas).
-  - Integrante B: **Rol 2** (PostgreSQL + `orders-inventory-service`).
-  - Integrante C: **Rol 3 + Rol 4** (MongoDB + Redis + `catalog-service` + `cart-service`).
+| Integrante | Estado / Rol | Módulo y Rama Git | Tareas Asignadas |
+|---|---|---|---|
+| **David Eduardo Salazar Mireles** | **Completado (Entrega 1 base)** | `main` | Diseño de arquitectura, diagramas, documento de decisiones, esquemas y scripts base de PostgreSQL/MongoDB/Redis, Docker Compose, scripts AWS, `.gitignore`/`.env.example`, repositorio GitHub y Entrega 1. |
+| **German David Hernandez Castro** | **Infraestructura AWS y Despliegue** | `feat/infra-aws` | **Pendiente de AWS (urgente):** crear VPC, subredes, Security Groups (puertos `5432`, `27017` y `6379` cerrados a Internet) y las 4 EC2 `t3.micro` usando `infrastructure/aws/cloudshell-all-in-one.sh`; levantar las 3 BDs y sacar evidencias. **Entrega 2 y Final:** configurar Nginx con las IPs privadas, desplegar los 3 servicios en EC2 y controlar costos (detener instancias al terminar pruebas). |
+| **Lizbeth Segundo Garcia** | **Servicio de Órdenes e Inventario** | `services/orders-inventory-service/` · `feat/orders-service` | Implementar API REST (:8003) conectada solo a PostgreSQL (`databases/postgres/init.sql`): `GET /health`, `GET /inventory/:sku`, `POST /orders/confirm` (consulta carrito vía HTTP a `cart-service`, ejecuta transacción ACID `confirmar_compra` con `SELECT ... FOR UPDATE`, devuelve `409` sin datos a medias si falta stock y vacía carrito vía HTTP), `GET /orders/customer/:clienteId` (historial), timeouts de 3 s y `Dockerfile`. |
+| **Bran Elton Duque Hernandez** | **Servicio de Catálogo (MongoDB)** | `services/catalog-service/` · `feat/catalog-mongodb` | Implementar API REST (:8001) conectada a MongoDB (`databases/mongodb/init.js`): verificar `$jsonSchema` e índices, `GET /health`, `GET /products` (listar y filtrar por categoría y precio), `GET /products/:productoId` (detalle con atributos variables), `POST/PUT /products` (con hook para invalidar caché), `POST/GET /products/:productoId/reviews` y `Dockerfile`. |
+| **Abraham** | **Carrito + Caché Redis + Rendimiento** | `services/cart-service/` · `feat/cart-redis-cache` | Implementar `cart-service` (:8002) en `redis-cart` (`GET /health`, sesiones con TTL 24 h, CRUD y vaciado de carrito con TTL 7 días, `Dockerfile`). Integrar **cache-aside** en `catalog-service` con `redis-catalog-cache` (`TTL`, invalidación al actualizar producto, fallback a MongoDB si Redis cae). **Entrega Final:** prueba de rendimiento (100 peticiones con y sin caché, tabla, gráfica y conclusiones). |
+| **Roque Martinez** | **Integración, API y Pruebas** | `feat/integration-tests` | Definir contrato de endpoints y crear Swagger/Postman (o interfaz mínima). Probar integración completa vía Nginx. **Entrega Final:** prueba de fallos (apagar contenedor y documentar respuesta controlada + recuperación), prueba de concurrencia (dos compras simultáneas del último artículo), reporte final y coordinación de video/presentación (máx. 10 min). |
 
 ---
 
 ## 2. Estrategia de Ramas y Commits en Git
 
-- Rama principal protegida: `main` (solo recibe merges probados vía Pull Request).
+- Rama principal: `main` (recibe cambios probados mediante Pull Request).
 - Ramas de trabajo por módulo:
-  - `feat/infra-aws` (Rol 1)
-  - `feat/orders-postgres` (Rol 2)
-  - `feat/catalog-mongodb` (Rol 3)
-  - `feat/cart-redis-cache` (Rol 4)
-  - `feat/integration-tests` (Rol 5)
+  - `feat/infra-aws` (German)
+  - `feat/orders-service` (Lizbeth)
+  - `feat/catalog-mongodb` (Elton)
+  - `feat/cart-redis-cache` (Abraham)
+  - `feat/integration-tests` (Roque)
 - Convención de commits (*Conventional Commits*):
-  - `feat(postgres): agrega esquema relacional y funcion transaccional confirmar_compra`
-  - `feat(mongodb): define validadores jsonSchema e indices de catalogo y resenas`
-  - `feat(redis): documenta estructura de claves TTL y scripts de verificacion`
-  - `chore(infra): agrega VPC, security groups y docker-compose para EC2`
-- **Regla de seguridad estricta**: Antes de cada commit verificar `git status` para asegurar que **ningún** archivo `.env`, `.pem` ni credencial de AWS esté incluido.
+  - `feat(orders): implementa endpoint confirmar compra con transaccion ACID`
+  - `feat(catalog): agrega filtros por categoria/precio y resenas`
+  - `feat(cart): implementa CRUD de carrito y sesiones con TTL en Redis`
+  - `test(concurrency): agrega script de compra simultanea del ultimo articulo`
+- **Regla de seguridad:** antes de hacer commit verificar `git status` para asegurar que **ningún** archivo `.env`, `.pem` ni credencial de AWS esté incluido.
 
 ---
 
@@ -46,6 +43,6 @@
 | Fecha | Hito | Alcance |
 |---|---|---|
 | **18–20 nov (Entrega 1)** | Diseño + Infraestructura base | Arquitectura, decisiones, modelos de datos (PostgreSQL, MongoDB, Redis), reparto de tareas, repo Git y EC2 con BDs levantadas. |
-| **23–27 nov (Entrega 2)** | Construcción por módulo | Los 3 microservicios funcionando por separado con `/health` y evidencia de cada uno. |
-| **30 nov–2 dic (Entrega Final)** | Integración y pruebas | Comunicación completa vía API, pruebas de rendimiento, fallos y concurrencia, reporte final y video. |
-| **3–4 dic** | Presentación | Demostración en vivo (máx. 10 min) con participación de todo el equipo. |
+| **23–27 nov (Entrega 2)** | Construcción por módulo | Los 3 microservicios funcionando por separado con `GET /health`, Swagger/Postman, infraestructura AWS levantada y evidencia de cada servicio. |
+| **30 nov–2 dic (Entrega Final)** | Integración y pruebas | Comunicación completa vía API en EC2, pruebas de rendimiento, fallos y concurrencia, reporte final y video. |
+| **3–4 dic** | Presentación | Demostración en vivo (máx. 10 min) con participación de todos los integrantes. |
