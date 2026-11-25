@@ -1,0 +1,38 @@
+# Variables de entorno y secretos (NUNCA subir al repositorio)
+.env
+.env.*
+!.env.example
+
+# Llaves SSH, certificados y credenciales AWS
+*.pem
+*.key
+*.ppk
+*.crt
+id_rsa
+id_rsa.pub
+.aws/
+credentials
+
+# Dependencias y entornos virtuales
+node_modules/
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Datos locales de bases de datos y respaldos
+data/
+pgdata/
+mongodata/
+redisdata/
+*.dump
+*.sql.gz
+
+# Logs y archivos temporales del sistema
+*.log
+logs/
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/

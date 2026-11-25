@@ -1,0 +1,27 @@
+# ==============================================================================
+# EC2 Carrito: Redis 7 (Carrito de Compra y Sesiones con Expiración + AOF)
+# Bind exclusivo a 127.0.0.1 (nunca accesible desde Internet).
+# ==============================================================================
+services:
+  redis-cart:
+    image: redis:7.4-alpine
+    container_name: tienda-redis-cart
+    restart: unless-stopped
+    command: >
+      redis-server /usr/local/etc/redis/redis.conf
+      --requirepass ${REDIS_CART_PASSWORD:?Define REDIS_CART_PASSWORD en .env}
+    environment:
+      REDIS_CART_PASSWORD: ${REDIS_CART_PASSWORD:?Define REDIS_CART_PASSWORD en .env}
+    ports:
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - redis_cart_data:/data
+      - ../../../databases/redis/redis-cart.conf:/usr/local/etc/redis/redis.conf:ro
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a $${REDIS_CART_PASSWORD} --no-auth-warning ping | grep PONG"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  redis_cart_data:

@@ -1,0 +1,45 @@
+# ==============================================================================
+# EC2 Catálogo: MongoDB 7 + Redis 7 (Caché Cache-Aside)
+# Ambos motores hacen bind exclusivo a 127.0.0.1 (nunca accesibles desde Internet).
+# ==============================================================================
+services:
+  mongodb-catalog:
+    image: mongo:7.0
+    container_name: tienda-mongodb-catalog
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME:-catalog_admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD:?Define MONGO_INITDB_ROOT_PASSWORD en .env}
+      MONGO_INITDB_DATABASE: ${MONGO_DB_NAME:-tienda_catalogo}
+    ports:
+      - "127.0.0.1:27017:27017"
+    volumes:
+      - mongo_catalog_data:/data/db
+      - ../../../databases/mongodb/init.js:/docker-entrypoint-initdb.d/01-init.js:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --quiet --eval 'db.adminCommand({ ping: 1 }).ok' | grep 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  redis-catalog-cache:
+    image: redis:7.4-alpine
+    container_name: tienda-redis-cache
+    restart: unless-stopped
+    command: >
+      redis-server /usr/local/etc/redis/redis.conf
+      --requirepass ${REDIS_CACHE_PASSWORD:?Define REDIS_CACHE_PASSWORD en .env}
+    ports:
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - ../../../databases/redis/redis-cache.conf:/usr/local/etc/redis/redis.conf:ro
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a $${REDIS_CACHE_PASSWORD} --no-auth-warning ping | grep PONG"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    environment:
+      REDIS_CACHE_PASSWORD: ${REDIS_CACHE_PASSWORD:?Define REDIS_CACHE_PASSWORD en .env}
+
+volumes:
+  mongo_catalog_data:

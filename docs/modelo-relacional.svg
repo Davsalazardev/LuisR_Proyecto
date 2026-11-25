@@ -1,0 +1,116 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1060 540" width="1060" height="540" font-family="Arial, Helvetica, sans-serif">
+  <rect width="1060" height="540" fill="#FFFFFF"/>
+
+  <!-- Tabla: clientes -->
+  <rect x="24" y="30" width="265" height="200" fill="#FFFFFF" stroke="#333333" stroke-width="1.4"/>
+  <rect x="24" y="30" width="265" height="30" fill="#E8E8E8" stroke="#333333" stroke-width="1.4"/>
+  <text x="156" y="50" fill="#111111" font-size="13" font-weight="700" text-anchor="middle">clientes</text>
+
+  <text x="36" y="80" fill="#111111" font-size="11.5" font-weight="700">PK cliente_id</text>
+  <text x="278" y="80" fill="#555555" font-size="10.5" text-anchor="end">UUID</text>
+  <line x1="24" y1="90" x2="289" y2="90" stroke="#CCCCCC"/>
+  <text x="36" y="110" fill="#222222" font-size="11.5">nombre</text>
+  <text x="278" y="110" fill="#555555" font-size="10.5" text-anchor="end">VARCHAR(120) NN</text>
+  <text x="36" y="132" fill="#222222" font-size="11.5">UQ email</text>
+  <text x="278" y="132" fill="#555555" font-size="10.5" text-anchor="end">VARCHAR(160) UQ</text>
+  <text x="36" y="154" fill="#222222" font-size="11.5">telefono</text>
+  <text x="278" y="154" fill="#555555" font-size="10.5" text-anchor="end">VARCHAR(25)</text>
+  <text x="36" y="176" fill="#222222" font-size="11.5">direccion_envio</text>
+  <text x="278" y="176" fill="#555555" font-size="10.5" text-anchor="end">JSONB NN</text>
+  <text x="36" y="198" fill="#222222" font-size="11.5">creado_en</text>
+  <text x="278" y="198" fill="#555555" font-size="10.5" text-anchor="end">TIMESTAMPTZ</text>
+
+  <!-- Tabla: ordenes -->
+  <rect x="372" y="24" width="295" height="264" fill="#FFFFFF" stroke="#333333" stroke-width="1.4"/>
+  <rect x="372" y="24" width="295" height="30" fill="#E8E8E8" stroke="#333333" stroke-width="1.4"/>
+  <text x="519" y="44" fill="#111111" font-size="13" font-weight="700" text-anchor="middle">ordenes</text>
+
+  <text x="384" y="74" fill="#111111" font-size="11.5" font-weight="700">PK orden_id</text>
+  <text x="656" y="74" fill="#555555" font-size="10.5" text-anchor="end">UUID</text>
+  <line x1="372" y1="84" x2="667" y2="84" stroke="#CCCCCC"/>
+  <text x="384" y="104" fill="#111111" font-size="11.5" font-weight="700">FK cliente_id</text>
+  <text x="656" y="104" fill="#555555" font-size="10.5" text-anchor="end">UUID -&gt; clientes</text>
+  <text x="384" y="126" fill="#222222" font-size="11.5">estado</text>
+  <text x="656" y="126" fill="#555555" font-size="10.5" text-anchor="end">VARCHAR(20) CHECK</text>
+  <text x="384" y="148" fill="#222222" font-size="11.5">subtotal</text>
+  <text x="656" y="148" fill="#555555" font-size="10.5" text-anchor="end">NUMERIC(12,2) &gt;= 0</text>
+  <text x="384" y="170" fill="#222222" font-size="11.5">impuestos</text>
+  <text x="656" y="170" fill="#555555" font-size="10.5" text-anchor="end">NUMERIC(12,2) &gt;= 0</text>
+  <text x="384" y="192" fill="#222222" font-size="11.5">total</text>
+  <text x="656" y="192" fill="#555555" font-size="10.5" text-anchor="end">NUMERIC(12,2)</text>
+  <text x="384" y="214" fill="#222222" font-size="11.5">moneda</text>
+  <text x="656" y="214" fill="#555555" font-size="10.5" text-anchor="end">CHAR(3) 'MXN'</text>
+  <text x="384" y="236" fill="#222222" font-size="11.5">UQ idempotency_key</text>
+  <text x="656" y="236" fill="#555555" font-size="10.5" text-anchor="end">VARCHAR(64) UQ</text>
+  <text x="384" y="258" fill="#222222" font-size="11.5">creado_en / actualizado_en</text>
+  <text x="656" y="258" fill="#555555" font-size="10.5" text-anchor="end">TIMESTAMPTZ</text>
+  <text x="384" y="278" fill="#555555" font-size="10">IDX: (cliente_id, creado_en DESC)</text>
+
+  <!-- Tabla: orden_items -->
+  <rect x="748" y="24" width="288" height="244" fill="#FFFFFF" stroke="#333333" stroke-width="1.4"/>
+  <rect x="748" y="24" width="288" height="30" fill="#E8E8E8" stroke="#333333" stroke-width="1.4"/>
+  <text x="892" y="44" fill="#111111" font-size="13" font-weight="700" text-anchor="middle">orden_items</text>
+
+  <text x="760" y="74" fill="#111111" font-size="11.5" font-weight="700">PK orden_item_id</text>
+  <text x="1024" y="74" fill="#555555" font-size="10.5" text-anchor="end">BIGSERIAL</text>
+  <line x1="748" y1="84" x2="1036" y2="84" stroke="#CCCCCC"/>
+  <text x="760" y="104" fill="#111111" font-size="11.5" font-weight="700">FK orden_id</text>
+  <text x="1024" y="104" fill="#555555" font-size="10.5" text-anchor="end">UUID -&gt; ordenes</text>
+  <text x="760" y="126" fill="#111111" font-size="11.5" font-weight="700">FK sku</text>
+  <text x="1024" y="126" fill="#555555" font-size="10.5" text-anchor="end">VARCHAR(40) -&gt; inv.</text>
+  <text x="760" y="148" fill="#222222" font-size="11.5">producto_id</text>
+  <text x="1024" y="148" fill="#555555" font-size="10.5" text-anchor="end">VARCHAR(64)</text>
+  <text x="760" y="170" fill="#222222" font-size="11.5">nombre_producto</text>
+  <text x="1024" y="170" fill="#555555" font-size="10.5" text-anchor="end">VARCHAR(180)</text>
+  <text x="760" y="192" fill="#222222" font-size="11.5">cantidad</text>
+  <text x="1024" y="192" fill="#555555" font-size="10.5" text-anchor="end">INT CHECK (&gt; 0)</text>
+  <text x="760" y="214" fill="#222222" font-size="11.5">precio_unitario</text>
+  <text x="1024" y="214" fill="#555555" font-size="10.5" text-anchor="end">NUMERIC(12,2) &gt; 0</text>
+  <text x="760" y="236" fill="#222222" font-size="11.5">subtotal_linea</text>
+  <text x="1024" y="236" fill="#555555" font-size="10.5" text-anchor="end">GENERATED STORED</text>
+  <text x="760" y="258" fill="#555555" font-size="10">UQ: (orden_id, sku) | IDX: (sku, orden_id)</text>
+
+  <!-- Tabla: inventario -->
+  <rect x="748" y="324" width="288" height="192" fill="#FFFFFF" stroke="#333333" stroke-width="1.4"/>
+  <rect x="748" y="324" width="288" height="30" fill="#E8E8E8" stroke="#333333" stroke-width="1.4"/>
+  <text x="892" y="344" fill="#111111" font-size="13" font-weight="700" text-anchor="middle">inventario</text>
+
+  <text x="760" y="374" fill="#111111" font-size="11.5" font-weight="700">PK sku</text>
+  <text x="1024" y="374" fill="#555555" font-size="10.5" text-anchor="end">VARCHAR(40)</text>
+  <line x1="748" y1="384" x2="1036" y2="384" stroke="#CCCCCC"/>
+  <text x="760" y="404" fill="#222222" font-size="11.5">UQ producto_id</text>
+  <text x="1024" y="404" fill="#555555" font-size="10.5" text-anchor="end">VARCHAR(64) UQ</text>
+  <text x="760" y="426" fill="#222222" font-size="11.5">nombre_snapshot</text>
+  <text x="1024" y="426" fill="#555555" font-size="10.5" text-anchor="end">VARCHAR(180)</text>
+  <text x="760" y="448" fill="#222222" font-size="11.5">precio_unitario</text>
+  <text x="1024" y="448" fill="#555555" font-size="10.5" text-anchor="end">NUMERIC(12,2) &gt; 0</text>
+  <text x="760" y="470" fill="#111111" font-size="11.5" font-weight="700">stock_disponible</text>
+  <text x="1024" y="470" fill="#111111" font-size="10.5" font-weight="700" text-anchor="end">INT CHECK (&gt;= 0)</text>
+  <text x="760" y="492" fill="#222222" font-size="11.5">stock_minimo / version</text>
+  <text x="1024" y="492" fill="#555555" font-size="10.5" text-anchor="end">INT / TIMESTAMPTZ</text>
+
+  <!-- Nota técnica simple -->
+  <rect x="24" y="340" width="643" height="176" fill="#FAFAFA" stroke="#BBBBBB" stroke-width="1.2"/>
+  <text x="40" y="366" fill="#111111" font-size="12" font-weight="700">Transacción de compra (confirmar_compra)</text>
+  <text x="40" y="392" fill="#333333" font-size="11">1. Bloquea filas en inventario con SELECT ... FOR UPDATE ordenadas por SKU (evita deadlocks).</text>
+  <text x="40" y="416" fill="#333333" font-size="11">2. Verifica stock_disponible &gt;= cantidad; si falta stock, lanza excepción y hace ROLLBACK total.</text>
+  <text x="40" y="440" fill="#333333" font-size="11">3. Descuenta stock, inserta la orden y sus orden_items dentro de la misma transacción ACID.</text>
+  <text x="40" y="464" fill="#333333" font-size="11">4. La restricción CHECK (stock_disponible &gt;= 0) impide inventario negativo a nivel de motor.</text>
+  <text x="40" y="492" fill="#555555" font-size="10.5">Nota: producto_id es referencia lógica al catálogo en MongoDB (sin consultas cruzadas entre BDs).</text>
+
+  <!-- Relaciones -->
+  <line x1="289" y1="100" x2="372" y2="100" stroke="#333333" stroke-width="1.6"/>
+  <text x="298" y="92" fill="#111111" font-size="11.5" font-weight="700">1</text>
+  <text x="356" y="92" fill="#111111" font-size="11.5" font-weight="700">N</text>
+  <text x="330" y="116" fill="#555555" font-size="10" text-anchor="middle">realiza</text>
+
+  <line x1="667" y1="100" x2="748" y2="100" stroke="#333333" stroke-width="1.6"/>
+  <text x="676" y="92" fill="#111111" font-size="11.5" font-weight="700">1</text>
+  <text x="732" y="92" fill="#111111" font-size="11.5" font-weight="700">N</text>
+  <text x="708" y="116" fill="#555555" font-size="10" text-anchor="middle">contiene</text>
+
+  <line x1="892" y1="324" x2="892" y2="268" stroke="#333333" stroke-width="1.6"/>
+  <text x="902" y="316" fill="#111111" font-size="11.5" font-weight="700">1</text>
+  <text x="902" y="284" fill="#111111" font-size="11.5" font-weight="700">N</text>
+  <text x="945" y="300" fill="#555555" font-size="10">referencia</text>
+</svg>

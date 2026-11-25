@@ -1,0 +1,31 @@
+{
+  "productoId": "prod-cam-zara-001",
+  "sku": "CAM-ZARA-001",
+  "nombre": "Camisa Casual Manga Larga Algodón Oxford Azul",
+  "descripcion": "Camisa de corte regular confeccionada en algodón 100% Oxford transpirable.",
+  "categoria": "ropa",
+  "subcategoria": "camisas",
+  "marca": "Zara",
+  "precio": 899.00,
+  "moneda": "MXN",
+  "activo": true,
+  "imagenes": [
+    "https://cdn.tienda-ejemplo.com/productos/cam-zara-001.jpg"
+  ],
+  "etiquetas": ["casual", "oficina", "algodon"],
+  "atributos": {
+    "talla": "M",
+    "tallasDisponibles": ["S", "M", "L", "XL"],
+    "color": "Azul Marino",
+    "material": "100% Algodón Oxford",
+    "corte": "Regular Fit",
+    "genero": "Unisex",
+    "instruccionesLavado": "Lavar a máquina en agua fría; no usar cloro"
+  },
+  "resumenResenas": {
+    "promedio": 5.0,
+    "total": 1
+  },
+  "creadoEn": "2026-11-20T12:00:00Z",
+  "actualizadoEn": "2026-11-20T12:00:00Z"
+}

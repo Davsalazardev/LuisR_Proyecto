@@ -1,0 +1,26 @@
+# ==============================================================================
+# EC2 Órdenes e Inventario: PostgreSQL 16 (Base de Datos Relacional ACID)
+# Bind exclusivo a 127.0.0.1 (nunca accesible desde Internet).
+# ==============================================================================
+services:
+  postgres-orders:
+    image: postgres:16-alpine
+    container_name: tienda-postgres-orders
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-tienda_ordenes}
+      POSTGRES_USER: ${POSTGRES_USER:-orders_admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Define POSTGRES_PASSWORD en .env}
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres_orders_data:/var/lib/postgresql/data
+      - ../../../databases/postgres/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-orders_admin} -d $${POSTGRES_DB:-tienda_ordenes}"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_orders_data:

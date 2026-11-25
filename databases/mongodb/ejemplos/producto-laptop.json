@@ -1,0 +1,32 @@
+{
+  "productoId": "prod-lap-asus-001",
+  "sku": "LAP-ASUS-001",
+  "nombre": "Laptop ASUS Zenbook 14 OLED 16GB RAM 512GB SSD",
+  "descripcion": "Ultrabook ligera con pantalla OLED 2.8K, cuerpo de aluminio y batería de larga duración.",
+  "categoria": "electronica",
+  "subcategoria": "laptops",
+  "marca": "ASUS",
+  "precio": 21999.00,
+  "moneda": "MXN",
+  "activo": true,
+  "imagenes": [
+    "https://cdn.tienda-ejemplo.com/productos/lap-asus-001.jpg"
+  ],
+  "etiquetas": ["ultrabook", "oled", "trabajo"],
+  "atributos": {
+    "procesador": "Intel Core Ultra 7 155H",
+    "ramGb": 16,
+    "almacenamientoGb": 512,
+    "tipoAlmacenamiento": "NVMe PCIe 4.0 SSD",
+    "pantallaPulgadas": 14.0,
+    "resolucion": "2880x1800 OLED 90Hz",
+    "sistemaOperativo": "Windows 11 Home",
+    "pesoKg": 1.22
+  },
+  "resumenResenas": {
+    "promedio": 0,
+    "total": 0
+  },
+  "creadoEn": "2026-11-20T12:00:00Z",
+  "actualizadoEn": "2026-11-20T12:00:00Z"
+}

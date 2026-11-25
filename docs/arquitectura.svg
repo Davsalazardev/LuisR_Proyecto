@@ -1,0 +1,158 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 680" width="1120" height="680" font-family="Arial, Helvetica, sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#333333"/>
+    </marker>
+    <marker id="arr-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#666666"/>
+    </marker>
+  </defs>
+
+  <rect width="1120" height="680" fill="#FFFFFF"/>
+
+  <!-- Actores externos -->
+  <rect x="20" y="120" width="150" height="72" fill="#FFFFFF" stroke="#333333" stroke-width="1.4"/>
+  <text x="95" y="148" fill="#111111" font-size="13" font-weight="700" text-anchor="middle">Cliente / API</text>
+  <text x="95" y="166" fill="#444444" font-size="11" text-anchor="middle">Postman / Swagger</text>
+  <text x="95" y="182" fill="#555555" font-size="10.5" text-anchor="middle">HTTP :80 (0.0.0.0/0)</text>
+
+  <rect x="20" y="260" width="150" height="72" fill="#FFFFFF" stroke="#333333" stroke-width="1.4"/>
+  <text x="95" y="288" fill="#111111" font-size="13" font-weight="700" text-anchor="middle">Administrador</text>
+  <text x="95" y="306" fill="#444444" font-size="11" text-anchor="middle">SSH :22 + Túnel</text>
+  <text x="95" y="322" fill="#555555" font-size="10.5" text-anchor="middle">Solo desde &lt;MI_IP&gt;/32</text>
+
+  <!-- VPC -->
+  <rect x="210" y="20" width="890" height="640" fill="#FAFAFA" stroke="#222222" stroke-width="1.6" stroke-dasharray="6 4"/>
+  <text x="226" y="44" fill="#111111" font-size="13" font-weight="700">AWS VPC — vpc-tienda-departamental (10.0.0.0/16)</text>
+
+  <!-- Subred Pública -->
+  <rect x="230" y="64" width="215" height="576" fill="#F4F7FA" stroke="#7A94B8" stroke-width="1.2"/>
+  <text x="242" y="86" fill="#1F3A5F" font-size="12" font-weight="700">Subred Pública (10.0.1.0/24)</text>
+  <text x="242" y="102" fill="#4A607A" font-size="10.5">Internet Gateway (IGW)</text>
+
+  <!-- EC2 Gateway / Bastión -->
+  <rect x="246" y="124" width="183" height="220" fill="#FFFFFF" stroke="#333333" stroke-width="1.3"/>
+  <rect x="246" y="124" width="183" height="28" fill="#E6EEF8" stroke="#333333" stroke-width="1.3"/>
+  <text x="337" y="143" fill="#111111" font-size="12" font-weight="700" text-anchor="middle">ec2-gateway-bastion</text>
+  <text x="337" y="168" fill="#444444" font-size="10.5" text-anchor="middle">t3.micro | 10.0.1.10</text>
+  <text x="337" y="183" fill="#444444" font-size="10.5" text-anchor="middle">SG: sg-gateway-bastion</text>
+
+  <rect x="258" y="196" width="159" height="70" fill="#FAFAFA" stroke="#888888" stroke-width="1"/>
+  <text x="337" y="214" fill="#111111" font-size="11.5" font-weight="700" text-anchor="middle">Nginx Reverse Proxy</text>
+  <text x="337" y="230" fill="#333333" font-size="10.5" text-anchor="middle">/api/catalog -&gt; :8001</text>
+  <text x="337" y="244" fill="#333333" font-size="10.5" text-anchor="middle">/api/cart -&gt; :8002</text>
+  <text x="337" y="258" fill="#333333" font-size="10.5" text-anchor="middle">/api/orders -&gt; :8003</text>
+
+  <rect x="258" y="278" width="159" height="52" fill="#FAFAFA" stroke="#888888" stroke-width="1"/>
+  <text x="337" y="298" fill="#111111" font-size="11.5" font-weight="700" text-anchor="middle">Bastión SSH (:22)</text>
+  <text x="337" y="315" fill="#444444" font-size="10.5" text-anchor="middle">Salto SSH a subred privada</text>
+
+  <!-- Resumen SG Público -->
+  <rect x="246" y="370" width="183" height="106" fill="#FFFFFF" stroke="#BBBBBB" stroke-width="1"/>
+  <text x="256" y="390" fill="#111111" font-size="11" font-weight="700">Reglas SG Público:</text>
+  <text x="256" y="408" fill="#333333" font-size="10.5">- TCP 80/443: 0.0.0.0/0</text>
+  <text x="256" y="424" fill="#333333" font-size="10.5">- TCP 22: &lt;MI_IP&gt;/32</text>
+  <text x="256" y="446" fill="#111111" font-size="11" font-weight="700">Seguridad de BDs:</text>
+  <text x="256" y="464" fill="#333333" font-size="10.5">27017, 6379 y 5432 cerrados</text>
+
+  <!-- Leyenda simple -->
+  <rect x="246" y="504" width="183" height="114" fill="#FFFFFF" stroke="#BBBBBB" stroke-width="1"/>
+  <text x="256" y="524" fill="#111111" font-size="11" font-weight="700">Leyenda</text>
+  <line x1="256" y1="544" x2="290" y2="544" stroke="#333333" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="298" y="548" fill="#333333" font-size="10.5">Tráfico HTTP / BD local</text>
+  <line x1="256" y1="570" x2="290" y2="570" stroke="#666666" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#arr-gray)"/>
+  <text x="298" y="574" fill="#333333" font-size="10.5">API entre servicios / SSH</text>
+  <text x="256" y="602" fill="#555555" font-size="10">* Cada servicio accede solo</text>
+  <text x="256" y="614" fill="#555555" font-size="10">a su propia base de datos.</text>
+
+  <!-- Subred Privada -->
+  <rect x="468" y="64" width="612" height="576" fill="#F5F8F5" stroke="#7A9E7E" stroke-width="1.2"/>
+  <text x="482" y="86" fill="#1E4620" font-size="12" font-weight="700">Subred Privada (10.0.2.0/24) — Servicios y Bases de Datos</text>
+  <text x="482" y="102" fill="#466848" font-size="10.5">Sin acceso directo desde Internet; administración solo por Bastión SSH</text>
+
+  <!-- EC2 1: Catálogo -->
+  <rect x="498" y="120" width="564" height="152" fill="#FFFFFF" stroke="#333333" stroke-width="1.3"/>
+  <rect x="498" y="120" width="564" height="26" fill="#EAEAEA" stroke="#333333" stroke-width="1.3"/>
+  <text x="510" y="138" fill="#111111" font-size="11.5" font-weight="700">1. ec2-catalog (t3.micro | 10.0.2.10) — SG: sg-catalog (8001 de GW/Orders, 22 de Bastión)</text>
+
+  <rect x="514" y="160" width="166" height="96" fill="#FAFAFA" stroke="#555555" stroke-width="1.2"/>
+  <text x="597" y="182" fill="#111111" font-size="12" font-weight="700" text-anchor="middle">catalog-service</text>
+  <text x="597" y="198" fill="#444444" font-size="10.5" text-anchor="middle">API :8001 | /health</text>
+  <text x="597" y="218" fill="#333333" font-size="10" text-anchor="middle">Productos, filtros y</text>
+  <text x="597" y="232" fill="#333333" font-size="10" text-anchor="middle">reseñas (cache-aside)</text>
+
+  <rect x="708" y="160" width="164" height="96" fill="#FFFFFF" stroke="#333333" stroke-width="1.2"/>
+  <text x="790" y="182" fill="#111111" font-size="12" font-weight="700" text-anchor="middle">MongoDB 7 (:27017)</text>
+  <text x="790" y="198" fill="#555555" font-size="10" text-anchor="middle">Bind: 127.0.0.1</text>
+  <text x="790" y="218" fill="#333333" font-size="10" text-anchor="middle">productos ($jsonSchema)</text>
+  <text x="790" y="232" fill="#333333" font-size="10" text-anchor="middle">resenas ($jsonSchema)</text>
+  <text x="790" y="246" fill="#333333" font-size="10" text-anchor="middle">Índices cat./precio</text>
+
+  <rect x="888" y="160" width="160" height="96" fill="#FFFFFF" stroke="#333333" stroke-width="1.2"/>
+  <text x="968" y="182" fill="#111111" font-size="12" font-weight="700" text-anchor="middle">Redis Caché (:6379)</text>
+  <text x="968" y="198" fill="#555555" font-size="10" text-anchor="middle">Bind: 127.0.0.1</text>
+  <text x="968" y="218" fill="#333333" font-size="10" text-anchor="middle">allkeys-lru (TTL 300s)</text>
+  <text x="968" y="232" fill="#333333" font-size="10" text-anchor="middle">Invalidación al editar</text>
+  <text x="968" y="246" fill="#333333" font-size="10" text-anchor="middle">Fallback a MongoDB</text>
+
+  <line x1="680" y1="208" x2="706" y2="208" stroke="#333333" stroke-width="1.4" marker-end="url(#arr)"/>
+  <path d="M 680 176 L 694 176 L 694 152 L 968 152 L 968 158" fill="none" stroke="#666666" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#arr-gray)"/>
+
+  <!-- EC2 2: Carrito -->
+  <rect x="498" y="294" width="564" height="142" fill="#FFFFFF" stroke="#333333" stroke-width="1.3"/>
+  <rect x="498" y="294" width="564" height="26" fill="#EAEAEA" stroke="#333333" stroke-width="1.3"/>
+  <text x="510" y="312" fill="#111111" font-size="11.5" font-weight="700">2. ec2-cart (t3.micro | 10.0.2.20) — SG: sg-cart (8002 de GW/Orders, 22 de Bastión)</text>
+
+  <rect x="514" y="334" width="210" height="86" fill="#FAFAFA" stroke="#555555" stroke-width="1.2"/>
+  <text x="619" y="356" fill="#111111" font-size="12" font-weight="700" text-anchor="middle">cart-service</text>
+  <text x="619" y="372" fill="#444444" font-size="10.5" text-anchor="middle">API :8002 | /health</text>
+  <text x="619" y="392" fill="#333333" font-size="10" text-anchor="middle">CRUD carrito de compra</text>
+  <text x="619" y="406" fill="#333333" font-size="10" text-anchor="middle">Sesiones de usuario</text>
+
+  <rect x="764" y="334" width="284" height="86" fill="#FFFFFF" stroke="#333333" stroke-width="1.2"/>
+  <text x="906" y="356" fill="#111111" font-size="12" font-weight="700" text-anchor="middle">Redis 7 — Carrito y Sesiones (:6379)</text>
+  <text x="906" y="372" fill="#555555" font-size="10" text-anchor="middle">Bind: 127.0.0.1 | Persistencia AOF</text>
+  <text x="906" y="392" fill="#333333" font-size="10" text-anchor="middle">HASH cart:{userId} (TTL 7 días)</text>
+  <text x="906" y="406" fill="#333333" font-size="10" text-anchor="middle">HASH session:{sessionId} (TTL 24 h)</text>
+
+  <line x1="724" y1="377" x2="762" y2="377" stroke="#333333" stroke-width="1.4" marker-end="url(#arr)"/>
+
+  <!-- EC2 3: Órdenes e Inventario -->
+  <rect x="498" y="460" width="564" height="158" fill="#FFFFFF" stroke="#333333" stroke-width="1.3"/>
+  <rect x="498" y="460" width="564" height="26" fill="#EAEAEA" stroke="#333333" stroke-width="1.3"/>
+  <text x="510" y="478" fill="#111111" font-size="11.5" font-weight="700">3. ec2-orders (t3.micro | 10.0.2.30) — SG: sg-orders (8003 de GW, 22 de Bastión)</text>
+
+  <rect x="514" y="500" width="210" height="102" fill="#FAFAFA" stroke="#555555" stroke-width="1.2"/>
+  <text x="619" y="522" fill="#111111" font-size="12" font-weight="700" text-anchor="middle">orders-inventory-service</text>
+  <text x="619" y="538" fill="#444444" font-size="10.5" text-anchor="middle">API :8003 | /health</text>
+  <text x="619" y="558" fill="#333333" font-size="10" text-anchor="middle">Confirmar compra (ACID)</text>
+  <text x="619" y="572" fill="#333333" font-size="10" text-anchor="middle">Descuento de inventario</text>
+  <text x="619" y="586" fill="#333333" font-size="10" text-anchor="middle">Historial de órdenes</text>
+
+  <rect x="764" y="500" width="284" height="102" fill="#FFFFFF" stroke="#333333" stroke-width="1.2"/>
+  <text x="906" y="522" fill="#111111" font-size="12" font-weight="700" text-anchor="middle">PostgreSQL 16 (:5432)</text>
+  <text x="906" y="538" fill="#555555" font-size="10" text-anchor="middle">Bind: 127.0.0.1 (o RDS opcional)</text>
+  <text x="906" y="558" fill="#333333" font-size="10" text-anchor="middle">clientes, inventario, ordenes, orden_items</text>
+  <text x="906" y="572" fill="#333333" font-size="10" text-anchor="middle">CHECK (stock_disponible &gt;= 0)</text>
+  <text x="906" y="586" fill="#333333" font-size="10" text-anchor="middle">Transacción con SELECT ... FOR UPDATE</text>
+
+  <line x1="724" y1="551" x2="762" y2="551" stroke="#333333" stroke-width="1.4" marker-end="url(#arr)"/>
+
+  <!-- Flechas Externas -> Gateway -->
+  <path d="M 170 156 L 200 156 L 200 230 L 256 230" fill="none" stroke="#333333" stroke-width="1.5" marker-end="url(#arr)"/>
+  <path d="M 170 296 L 256 296" fill="none" stroke="#666666" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#arr-gray)"/>
+
+  <!-- Flechas Gateway -> Servicios -->
+  <path d="M 417 220 L 456 220 L 456 200 L 512 200" fill="none" stroke="#333333" stroke-width="1.5" marker-end="url(#arr)"/>
+  <path d="M 417 232 L 456 232 L 456 374 L 512 374" fill="none" stroke="#333333" stroke-width="1.5" marker-end="url(#arr)"/>
+  <path d="M 417 244 L 448 244 L 448 544 L 512 544" fill="none" stroke="#333333" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Comunicación interna entre servicios (Orders -> Cart y Orders -> Catalog por el margen interno) -->
+  <path d="M 619 500 L 619 422" fill="none" stroke="#666666" stroke-width="1.4" stroke-dasharray="4 3" marker-end="url(#arr-gray)"/>
+  <rect x="626" y="438" width="136" height="16" fill="#FFFFFF" stroke="#CCCCCC" stroke-width="0.8"/>
+  <text x="694" y="450" fill="#333333" font-size="9.5" text-anchor="middle">HTTP: leer/vaciar carrito</text>
+
+  <path d="M 514 575 L 482 575 L 482 225 L 512 225" fill="none" stroke="#666666" stroke-width="1.4" stroke-dasharray="4 3" marker-end="url(#arr-gray)"/>
+  <rect x="498" y="274" width="102" height="16" fill="#FFFFFF" stroke="#CCCCCC" stroke-width="0.8"/>
+  <text x="549" y="286" fill="#333333" font-size="9.5" text-anchor="middle">HTTP: validar SKU</text>
+</svg>

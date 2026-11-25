@@ -1,0 +1,36 @@
+{
+  "productoId": "prod-ref-lg-001",
+  "sku": "REF-LG-001",
+  "nombre": "Refrigerador LG Inverter 18 pies Acero Inoxidable",
+  "descripcion": "Refrigerador Top Mount con compresor Smart Inverter y enfriamiento uniforme DoorCooling+.",
+  "categoria": "linea_blanca",
+  "subcategoria": "refrigeradores",
+  "marca": "LG",
+  "precio": 18499.00,
+  "moneda": "MXN",
+  "activo": true,
+  "imagenes": [
+    "https://cdn.tienda-ejemplo.com/productos/ref-lg-001-frente.jpg"
+  ],
+  "etiquetas": ["ahorro-energia", "inverter", "cocina"],
+  "atributos": {
+    "capacidadPiesCubicos": 18,
+    "eficienciaEnergetica": "A++",
+    "tipoCompresor": "Smart Inverter",
+    "voltaje": "127V / 60Hz",
+    "dispensadorAgua": true,
+    "colorAcabado": "Acero Inoxidable",
+    "dimensionesCm": {
+      "alto": 178,
+      "ancho": 70,
+      "profundidad": 73
+    },
+    "garantiaMeses": 24
+  },
+  "resumenResenas": {
+    "promedio": 4.5,
+    "total": 2
+  },
+  "creadoEn": "2026-11-20T12:00:00Z",
+  "actualizadoEn": "2026-11-20T12:00:00Z"
+}
