@@ -1,0 +1,168 @@
+
+======================================================================
+ 0. Gateway Nginx público (http://44.203.248.7)
+======================================================================
+$ curl http://44.203.248.7/health
+{"service":"api-gateway","status":"ok"}
+$ curl -i http://44.203.248.7/api/catalog/  (503 = Nginx enruta, el microservicio aún no está levantado)
+HTTP/1.1 503 Service Temporarily Unavailable
+
+$ curl -i http://44.203.248.7/api/cart/  (503 = Nginx enruta, el microservicio aún no está levantado)
+HTTP/1.1 503 Service Temporarily Unavailable
+
+$ curl -i http://44.203.248.7/api/orders/  (503 = Nginx enruta, el microservicio aún no está levantado)
+HTTP/1.1 503 Service Temporarily Unavailable
+
+
+======================================================================
+ 1. ec2-catalog (10.0.1.20) vía Bastión: MongoDB 7 + Redis Caché
+======================================================================
+Warning: Permanently added '44.203.248.7' (ED25519) to the list of known hosts.
+Warning: Permanently added '10.0.1.20' (ED25519) to the list of known hosts.
+ip-10-0-1-20
+NAMES                    STATUS         PORTS
+tienda-redis-cache       Up 2 minutes   127.0.0.1:6379->6379/tcp
+tienda-mongodb-catalog   Up 2 minutes   127.0.0.1:27017->27017/tcp
+Colecciones: ["resenas","productos"]
+Productos: 2 | Reseñas: 1
+Índices productos: ["_id_","productoId_1","sku_1","activo_1_categoria_1_precio_1"]
+OK $jsonSchema rechazó documento inválido, code 121
+--- Redis Caché
+PONG
+maxmemory-policy
+allkeys-lru
+
+======================================================================
+ 2. ec2-cart (10.0.1.30) vía Bastión: Redis Carrito/Sesiones (AOF)
+======================================================================
+Warning: Permanently added '44.203.248.7' (ED25519) to the list of known hosts.
+Warning: Permanently added '10.0.1.30' (ED25519) to the list of known hosts.
+ip-10-0-1-30
+NAMES               STATUS          PORTS
+tienda-redis-cart   Up 29 seconds   127.0.0.1:6379->6379/tcp
+PONG
+appendonly
+yes
+OK
+TTL cart:demo = 604800
+
+======================================================================
+ 3. ec2-orders (10.0.1.40) vía Bastión: PostgreSQL 16 (verify.sql)
+======================================================================
+Warning: Permanently added '44.203.248.7' (ED25519) to the list of known hosts.
+Warning: Permanently added '10.0.1.40' (ED25519) to the list of known hosts.
+ip-10-0-1-40
+NAMES                    STATUS          PORTS
+tienda-postgres-orders   Up 29 seconds   127.0.0.1:5432->5432/tcp
+Warning: Permanently added '44.203.248.7' (ED25519) to the list of known hosts.
+Warning: Permanently added '10.0.1.40' (ED25519) to the list of known hosts.
+=== 1. Tablas creadas ===
+              List of relations
+ Schema |    Name     | Type  |    Owner     
+--------+-------------+-------+--------------
+ public | clientes    | table | orders_admin
+ public | inventario  | table | orders_admin
+ public | orden_items | table | orders_admin
+ public | ordenes     | table | orders_admin
+(4 rows)
+
+=== 2. Índices creados ===
+                             List of relations
+ Schema |            Name             | Type  |    Owner     |    Table    
+--------+-----------------------------+-------+--------------+-------------
+ public | clientes_email_key          | index | orders_admin | clientes
+ public | clientes_pkey               | index | orders_admin | clientes
+ public | idx_inventario_producto_id  | index | orders_admin | inventario
+ public | idx_orden_items_orden       | index | orders_admin | orden_items
+ public | idx_orden_items_sku_orden   | index | orders_admin | orden_items
+ public | idx_ordenes_cliente_fecha   | index | orders_admin | ordenes
+ public | inventario_pkey             | index | orders_admin | inventario
+ public | inventario_producto_id_key  | index | orders_admin | inventario
+ public | orden_items_pkey            | index | orders_admin | orden_items
+ public | ordenes_idempotency_key_key | index | orders_admin | ordenes
+ public | ordenes_pkey                | index | orders_admin | ordenes
+ public | uq_orden_items_orden_sku    | index | orders_admin | orden_items
+(12 rows)
+
+=== 3. Inventario inicial ===
+     sku      |    producto_id    | precio_unitario | stock_disponible 
+--------------+-------------------+-----------------+------------------
+ CAM-ZARA-001 | prod-cam-zara-001 |          899.00 |               25
+ LAP-ASUS-001 | prod-lap-asus-001 |        21999.00 |                6
+ REF-LG-001   | prod-ref-lg-001   |        18499.00 |                1
+ TEN-NIKE-001 | prod-ten-nike-001 |         2799.00 |               12
+(4 rows)
+
+=== 4. Prueba de restricción CHECK (debe fallar al intentar stock negativo) ===
+NOTICE:  OK: CHECK (stock_disponible >= 0) bloqueó correctamente el stock negativo.
+DO
+=== 5. Prueba transaccional de compra válida + rollback si falta stock ===
+BEGIN
+               orden_id               | subtotal | impuestos |  total   |   estado   
+--------------------------------------+----------+-----------+----------+------------
+ 986460c5-c138-450f-91a7-dc2675b432d4 | 18499.00 |   2959.84 | 21458.84 | CONFIRMADA
+(1 row)
+
+    sku     | stock_disponible 
+------------+------------------
+ REF-LG-001 |                0
+(1 row)
+
+NOTICE:  OK: Transacción rechazada correctamente -> INSUFFICIENT_STOCK: Stock insuficiente para SKU REF-LG-001 (disponible: 0, solicitado: 1).
+DO
+ROLLBACK
+=== 6. Verificación de estado limpio tras ROLLBACK ===
+    sku     | stock_disponible 
+------------+------------------
+ REF-LG-001 |                1
+(1 row)
+
+
+======================================================================
+ 4. Prueba negativa: BDs NO accesibles desde Internet (IPs públicas)
+======================================================================
+cerrado 3.239.158.153:27017
+cerrado 3.239.158.153:6379
+cerrado 3.239.158.153:5432
+cerrado 44.203.246.30:27017
+cerrado 44.203.246.30:6379
+cerrado 44.203.246.30:5432
+cerrado 3.239.30.48:27017
+cerrado 3.239.30.48:6379
+cerrado 3.239.30.48:5432
+
+======================================================================
+ 5. Security Groups (reglas de entrada)
+======================================================================
+- Puertos:
+  - - 22
+    - ''
+    - sg-0223d0a08fed17b3a
+  - - 8002
+    - ''
+    - sg-0223d0a08fed17b3a,sg-085ecce2d71479828
+  SG: sg-cart
+- Puertos:
+  - - 22
+    - ''
+    - sg-0223d0a08fed17b3a
+  - - 8003
+    - ''
+    - sg-0223d0a08fed17b3a
+  SG: sg-orders
+- Puertos:
+  - - 80
+    - 0.0.0.0/0
+    - ''
+  - - 22
+    - 3.237.44.35/32
+    - ''
+  SG: sg-gateway-bastion
+- Puertos:
+  - - 8001
+    - ''
+    - sg-0223d0a08fed17b3a,sg-085ecce2d71479828
+  - - 22
+    - ''
+    - sg-0223d0a08fed17b3a
+  SG: sg-catalog
