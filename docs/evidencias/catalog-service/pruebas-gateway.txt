@@ -1,0 +1,368 @@
+
+======================================================================
+ 1. GET /health (estado de MongoDB y Redis caché)
+======================================================================
+$ curl -X GET http://44.203.248.7/api/catalog/health
+HTTP 200 | X-Cache: 
+{
+  "service": "catalog-service",
+  "status": "ok",
+  "mongodb": {
+    "status": "up",
+    "latencyMs": 3
+  },
+  "redisCache": {
+    "status": "up"
+  },
+  "uptimeSec": 11
+}
+
+======================================================================
+ 2. GET /products (listado completo)
+======================================================================
+$ curl -X GET http://44.203.248.7/api/catalog/products
+HTTP 200 | X-Cache: MISS
+{
+  "total": 4,
+  "items": [
+    {
+      "productoId": "prod-cam-zara-001",
+      "categoria": "ropa",
+      "nombre": "Camisa Casual Algodon Oxford Azul",
+      "precio": 899,
+      "resumenResenas": {
+        "promedio": 5,
+        "total": 1
+      }
+    },
+    {
+      "productoId": "prod-ten-nike-001",
+      "categoria": "calzado",
+      "nombre": "Tenis Deportivos Running Air Zoom Negro",
+      "precio": 2799,
+      "resumenResenas": {
+        "promedio": 0,
+        "total": 0
+      }
+    },
+    {
+      "productoId": "prod-ref-lg-001",
+      "categoria": "linea_blanca",
+      "nombre": "Refrigerador LG Inverter 18 pies",
+      "precio": 18499,
+      "resumenResenas": {
+        "promedio": 4.5,
+        "total": 2
+      }
+    },
+    {
+      "productoId": "prod-lap-asus-001",
+      "categoria": "electronica",
+      "nombre": "Laptop ASUS Zenbook 14 OLED 16GB RAM 512GB SSD",
+      "precio": 21999,
+      "resumenResenas": {
+        "promedio": 0,
+        "total": 0
+      }
+    }
+  ]
+}
+
+======================================================================
+ 3. Filtros: categoria=linea_blanca
+======================================================================
+$ curl -X GET http://44.203.248.7/api/catalog/products?categoria=linea_blanca
+HTTP 200 | X-Cache: MISS
+{
+  "filtros": {
+    "categoria": "linea_blanca",
+    "precioMin": null,
+    "precioMax": null,
+    "q": null
+  },
+  "total": 1,
+  "items": [
+    {
+      "productoId": "prod-ref-lg-001",
+      "categoria": "linea_blanca",
+      "precio": 18499
+    }
+  ]
+}
+
+======================================================================
+ 4. Filtros: precioMin=1000&precioMax=20000 (2a llamada = X-Cache HIT)
+======================================================================
+$ curl -X GET http://44.203.248.7/api/catalog/products?precioMin=1000&precioMax=20000
+HTTP 200 | X-Cache: MISS
+{
+  "filtros": {
+    "categoria": null,
+    "precioMin": 1000,
+    "precioMax": 20000,
+    "q": null
+  },
+  "total": 2,
+  "items": [
+    {
+      "productoId": "prod-ten-nike-001",
+      "precio": 2799
+    },
+    {
+      "productoId": "prod-ref-lg-001",
+      "precio": 18499
+    }
+  ]
+}
+$ curl -X GET http://44.203.248.7/api/catalog/products?precioMin=1000&precioMax=20000
+HTTP 200 | X-Cache: HIT
+{
+  "total": 2
+}
+
+======================================================================
+ 5. GET /products/:productoId (atributos variables según tipo)
+======================================================================
+$ curl -X GET http://44.203.248.7/api/catalog/products/prod-ref-lg-001
+HTTP 200 | X-Cache: MISS
+{
+  "productoId": "prod-ref-lg-001",
+  "categoria": "linea_blanca",
+  "atributos": {
+    "capacidadPiesCubicos": 18,
+    "eficienciaEnergetica": "A++",
+    "voltaje": "127V/60Hz"
+  }
+}
+$ curl -X GET http://44.203.248.7/api/catalog/products/prod-cam-zara-001
+HTTP 200 | X-Cache: MISS
+{
+  "productoId": "prod-cam-zara-001",
+  "categoria": "ropa",
+  "atributos": {
+    "talla": "M",
+    "color": "Azul Marino",
+    "material": "100% Algodon"
+  }
+}
+$ curl -X GET http://44.203.248.7/api/catalog/products/no-existe-999
+HTTP 404 | X-Cache: MISS
+{
+  "error": "NOT_FOUND",
+  "message": "No existe el producto 'no-existe-999'."
+}
+
+======================================================================
+ 6. POST /products (alta válida) y PUT /products/:productoId
+======================================================================
+$ curl -X POST http://44.203.248.7/api/catalog/products -d '{"productoId":"prod-lic-oster-165509","sku":"LIC-OSTER-165509","nombre":"Licuadora Oster 10 velocidades","categoria":"hogar","marca":"Oster","precio":1299.5,"atributos":{"potenciaW":600,"capacidadLitros":1.25,"velocidades":10}}'
+HTTP 201 | X-Cache: 
+{
+  "productoId": "prod-lic-oster-165509",
+  "sku": "LIC-OSTER-165509",
+  "precio": 1299.5,
+  "atributos": {
+    "potenciaW": 600,
+    "capacidadLitros": 1.25,
+    "velocidades": 10
+  },
+  "resumenResenas": {
+    "promedio": 0,
+    "total": 0
+  }
+}
+$ curl -X PUT http://44.203.248.7/api/catalog/products/prod-lic-oster-165509 -d '{"precio":1199.0,"atributos":{"potenciaW":600,"capacidadLitros":1.25,"velocidades":10,"vasoVidrio":true}}'
+HTTP 200 | X-Cache: 
+{
+  "productoId": "prod-lic-oster-165509",
+  "precio": 1199,
+  "atributos": {
+    "potenciaW": 600,
+    "capacidadLitros": 1.25,
+    "velocidades": 10,
+    "vasoVidrio": true
+  }
+}
+
+======================================================================
+ 7. Rechazo de $jsonSchema (MongoDB code 121 -> HTTP 400)
+======================================================================
+$ curl -X POST http://44.203.248.7/api/catalog/products -d '{"productoId":"prod-bad-001","sku":"bad sku","nombre":"X","categoria":"juguetes","marca":"Y","precio":-10,"atributos":{}}'
+HTTP 400 | X-Cache: 
+{
+  "error": "SCHEMA_VALIDATION_FAILED",
+  "message": "MongoDB rechazó el documento: no cumple el $jsonSchema de la colección (code 121).",
+  "details": [
+    {
+      "regla": "pattern",
+      "campo": "sku",
+      "esperado": {
+        "pattern": "^[A-Z0-9-]{4,40}$"
+      },
+      "motivo": "regular expression did not match",
+      "valor": "bad sku"
+    },
+    {
+      "regla": "minLength",
+      "campo": "nombre",
+      "esperado": {
+        "minLength": 3
+      },
+      "motivo": "specified string length was not satisfied",
+      "valor": "X"
+    },
+    {
+      "regla": "enum",
+      "campo": "categoria",
+      "esperado": {
+        "enum": [
+          "linea_blanca",
+          "ropa",
+          "electronica",
+          "calzado",
+          "hogar"
+        ]
+      },
+      "motivo": "value was not found in enum",
+      "valor": "juguetes"
+    },
+    {
+      "regla": "minimum",
+      "campo": "precio",
+      "esperado": {
+        "minimum": 0.01
+      },
+      "motivo": "comparison failed",
+      "valor": -10
+    },
+    {
+      "regla": "minProperties",
+      "campo": "atributos",
+      "esperado": {
+        "minProperties": 1
+      },
+      "motivo": "specified number of properties was not satisfied"
+    }
+  ]
+}
+$ curl -X POST http://44.203.248.7/api/catalog/products -d '{"productoId":"prod-extra-165509","sku":"EXT-165509","nombre":"Campo extra","categoria":"hogar","marca":"Test","precio":10,"atributos":{"a":1},"campoNoPermitido":true}'
+HTTP 400 | X-Cache: 
+{
+  "error": "SCHEMA_VALIDATION_FAILED",
+  "message": "MongoDB rechazó el documento: no cumple el $jsonSchema de la colección (code 121).",
+  "details": [
+    {
+      "regla": "additionalProperties",
+      "noPermitidos": [
+        "campoNoPermitido"
+      ]
+    }
+  ]
+}
+$ curl -X PUT http://44.203.248.7/api/catalog/products/prod-ref-lg-001 -d '{"precio":"gratis"}'
+HTTP 400 | X-Cache: 
+{
+  "error": "SCHEMA_VALIDATION_FAILED",
+  "message": "MongoDB rechazó el documento: no cumple el $jsonSchema de la colección (code 121).",
+  "details": [
+    {
+      "regla": "bsonType",
+      "campo": "precio",
+      "esperado": {
+        "bsonType": [
+          "double",
+          "decimal",
+          "int"
+        ]
+      },
+      "motivo": "type did not match",
+      "valor": "gratis"
+    }
+  ]
+}
+
+======================================================================
+ 8. Reseñas: GET, POST (recalcula resumenResenas) y rechazos
+======================================================================
+$ curl -X GET http://44.203.248.7/api/catalog/products/prod-lap-asus-001/reviews
+HTTP 200 | X-Cache: MISS
+{
+  "productoId": "prod-lap-asus-001",
+  "resumenResenas": {
+    "promedio": 0,
+    "total": 0
+  },
+  "total": 0
+}
+$ curl -X POST http://44.203.248.7/api/catalog/products/prod-lap-asus-001/reviews -d '{"clienteId":"cliente-165509-0001","autorNombre":"Elton Duque","calificacion":4,"titulo":"Muy buena pantalla","comentario":"La pantalla OLED se ve increible y la bateria dura todo el dia.","compraVerificada":true}'
+HTTP 201 | X-Cache: 
+{
+  "resena": {
+    "resenaId": "6b08646d84ea3bda6fbd0b5f",
+    "compraVerificada": true,
+    "clienteId": "cliente-165509-0001",
+    "autorNombre": "Elton Duque",
+    "calificacion": 4,
+    "titulo": "Muy buena pantalla",
+    "comentario": "La pantalla OLED se ve increible y la bateria dura todo el dia.",
+    "productoId": "prod-lap-asus-001",
+    "creadoEn": "2026-11-26T16:55:09.821Z"
+  },
+  "resumenResenas": {
+    "promedio": 4,
+    "total": 1
+  }
+}
+$ curl -X GET http://44.203.248.7/api/catalog/products/prod-lap-asus-001/reviews
+HTTP 200 | X-Cache: MISS
+{
+  "productoId": "prod-lap-asus-001",
+  "resumenResenas": {
+    "promedio": 4,
+    "total": 1
+  },
+  "total": 1,
+  "items": [
+    {
+      "autorNombre": "Elton Duque",
+      "calificacion": 4,
+      "titulo": "Muy buena pantalla"
+    }
+  ]
+}
+$ curl -X GET http://44.203.248.7/api/catalog/products/prod-lap-asus-001
+HTTP 200 | X-Cache: MISS
+{
+  "productoId": "prod-lap-asus-001",
+  "resumenResenas": {
+    "promedio": 4,
+    "total": 1
+  }
+}
+$ curl -X POST http://44.203.248.7/api/catalog/products/prod-lap-asus-001/reviews -d '{"clienteId":"cliente-165509-0002","autorNombre":"Prueba","calificacion":8,"titulo":"Fuera de rango","comentario":"Calificacion mayor a cinco."}'
+HTTP 400 | X-Cache: 
+{
+  "error": "SCHEMA_VALIDATION_FAILED",
+  "message": "MongoDB rechazó el documento: no cumple el $jsonSchema de la colección (code 121).",
+  "details": [
+    {
+      "regla": "maximum",
+      "campo": "calificacion",
+      "esperado": {
+        "maximum": 5
+      },
+      "motivo": "comparison failed",
+      "valor": 8
+    }
+  ]
+}
+$ curl -X POST http://44.203.248.7/api/catalog/products/prod-lap-asus-001/reviews -d '{"clienteId":"cliente-165509-0001","autorNombre":"Elton Duque","calificacion":5,"titulo":"Duplicada","comentario":"Mismo cliente por segunda vez."}'
+HTTP 409 | X-Cache: 
+{
+  "error": "CONFLICT",
+  "message": "Ya existe un documento con ese valor único.",
+  "details": {
+    "productoId": "prod-lap-asus-001",
+    "clienteId": "cliente-165509-0001"
+  }
+}
